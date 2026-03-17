@@ -115,6 +115,7 @@ const Note = () => {
     const [activePage, setActivePage] = useState("Dashboard"); // Dashboard, All Notes, Favorites, Settings
     const [filterCategory, setFilterCategory] = useState("All");
     const [isFabOpen, setIsFabOpen] = useState(false);
+    const [isSidebarOpen, setIsSidebarOpen] = useState(false);
 
     // Form State
     const [title, setTitle] = useState("");
@@ -473,16 +474,29 @@ const Note = () => {
 
     return (
         <div className={`flex h-screen overflow-hidden transition-all duration-500 ${profile.darkMode ? 'bg-slate-950 text-white' : 'bg-[#F8FAFC] text-slate-900'}`}>
+            {/* Mobile Sidebar Overlay */}
+            {isSidebarOpen && (
+                <div 
+                    className="fixed inset-0 bg-black/60 backdrop-blur-sm z-40 lg:hidden animate-in fade-in duration-300"
+                    onClick={() => setIsSidebarOpen(false)}
+                ></div>
+            )}
+
             {/* Professional Sidebar */}
-            <aside className="w-64 sidebar-gradient text-white flex flex-col z-30 shadow-2xl">
-                <div className="p-8 pb-10 flex items-center gap-4">
-                    <div className="w-12 h-12 bg-white rounded-2xl flex items-center justify-center shadow-2xl shadow-black/20 overflow-hidden">
-                        <img src="./logo.png" alt="KeepNote Logo" className="w-full h-full object-cover" />
+            <aside className={`fixed inset-y-0 left-0 lg:static w-72 sidebar-gradient text-white flex flex-col z-50 shadow-2xl transition-transform duration-300 lg:translate-x-0 ${isSidebarOpen ? 'translate-x-0' : '-translate-x-full'}`}>
+                <div className="p-8 pb-10 flex items-center justify-between">
+                    <div className="flex items-center gap-4">
+                        <div className="w-12 h-12 bg-white rounded-2xl flex items-center justify-center shadow-2xl shadow-black/20 overflow-hidden">
+                            <img src="./logo.png" alt="KeepNote Logo" className="w-full h-full object-cover" />
+                        </div>
+                        <div>
+                            <h1 className="text-xl font-black tracking-tighter">KeepNote</h1>
+                            <p className="text-[10px] text-white/40 font-bold uppercase tracking-widest">Add Your Task</p>
+                        </div>
                     </div>
-                    <div>
-                        <h1 className="text-xl font-black tracking-tighter">KeepNote</h1>
-                        <p className="text-[10px] text-white/40 font-bold uppercase tracking-widest">Add Your Task</p>
-                    </div>
+                    <button onClick={() => setIsSidebarOpen(false)} className="lg:hidden p-2 hover:bg-white/10 rounded-xl transition-all">
+                        <X size={20} />
+                    </button>
                 </div>
 
                 <nav className="flex-1 px-4 space-y-8 overflow-y-auto no-scrollbar scroll-smooth">
@@ -496,7 +510,7 @@ const Note = () => {
                         ].map(item => (
                             <button 
                                 key={item.name}
-                                onClick={() => { setActivePage(item.name); setFilterCategory("All"); }}
+                                onClick={() => { setActivePage(item.name); setFilterCategory("All"); setIsSidebarOpen(false); }}
                                 className={`w-full flex items-center gap-4 px-4 py-3.5 rounded-2xl text-sm font-bold transition-all duration-300 group ${activePage === item.name ? (profile.darkMode ? 'bg-white/10 text-white shadow-lg' : 'bg-white/10 text-white shadow-lg') : 'text-white/40 hover:bg-white/5 hover:text-white'}`}
                             >
                                 <span className={`${activePage === item.name ? 'text-indigo-400' : 'text-white/20 group-hover:text-white/40'}`}>
@@ -519,7 +533,7 @@ const Note = () => {
                             {CATEGORIES.map(cat => (
                                 <button 
                                     key={cat.name}
-                                    onClick={() => { setActivePage("All Notes"); setFilterCategory(cat.name); }}
+                                    onClick={() => { setActivePage("All Notes"); setFilterCategory(cat.name); setIsSidebarOpen(false); }}
                                     className={`w-full flex items-center justify-between px-4 py-3 rounded-xl text-xs font-bold transition-all group ${filterCategory === cat.name ? 'bg-white/10 text-white' : 'text-white/40 hover:text-white hover:bg-white/5'}`}
                                 >
                                     <div className="flex items-center gap-3">
@@ -550,36 +564,42 @@ const Note = () => {
             </aside>
 
             {/* Main Area */}
-            <main className={`flex-1 flex flex-col min-w-0 relative ${profile.darkMode ? 'bg-slate-950' : 'bg-[#F8FAFC]'}`}>
+            <main className={`flex-1 flex flex-col min-w-0 relative h-screen overflow-hidden ${profile.darkMode ? 'bg-slate-950' : 'bg-[#F8FAFC]'}`}>
                 {/* Professional Header */}
-                <header className={`h-24 backdrop-blur-md border-b px-12 flex items-center justify-between sticky top-0 z-20 transition-all duration-500 ${profile.darkMode ? 'bg-slate-900/80 border-slate-800' : 'bg-white/80 border-slate-100'}`}>
-                    <div className="flex items-center gap-8 flex-1">
+                <header className={`h-20 lg:h-24 backdrop-blur-md border-b px-6 lg:px-12 flex items-center justify-between sticky top-0 z-20 transition-all duration-500 ${profile.darkMode ? 'bg-slate-900/80 border-slate-800' : 'bg-white/80 border-slate-100'}`}>
+                    <div className="flex items-center gap-4 lg:gap-8 flex-1">
+                        <button 
+                            onClick={() => setIsSidebarOpen(true)}
+                            className="lg:hidden p-2 text-slate-500 hover:bg-slate-100 rounded-xl transition-all"
+                        >
+                            <LayoutDashboard size={20} />
+                        </button>
                         <div className="relative w-full max-w-xl group">
-                            <Search className={`absolute left-5 top-1/2 -translate-y-1/2 w-4 h-4 transition-colors group-focus-within:text-[#6366F1] ${profile.darkMode ? 'text-slate-500' : 'text-slate-300'}`} />
+                            <Search className={`absolute left-4 lg:left-5 top-1/2 -translate-y-1/2 w-4 h-4 transition-colors group-focus-within:text-[#6366F1] ${profile.darkMode ? 'text-slate-500' : 'text-slate-300'}`} />
                             <input
                                 type="text"
-                                placeholder="Search folders, notes, tags..."
-                                className="w-full bg-slate-50/50 border border-transparent focus:border-[#6366F1]/30 focus:bg-white rounded-2xl py-3.5 pl-14 pr-6 outline-none text-sm font-bold transition-all placeholder:text-slate-300"
+                                placeholder="Search folders, notes..."
+                                className={`w-full bg-slate-50/50 border border-transparent focus:border-[#6366F1]/30 focus:bg-white rounded-2xl py-2.5 lg:py-3.5 pl-12 lg:pl-14 pr-6 outline-none text-sm font-bold transition-all placeholder:text-slate-300 ${profile.darkMode ? 'bg-slate-900/50 text-white' : ''}`}
                                 value={searchQuery}
                                 onChange={(e) => setSearchQuery(e.target.value)}
                             />
                         </div>
                     </div>
                     
-                    <div className="flex items-center gap-6">
-                        <button className="p-3 text-slate-400 hover:bg-slate-50 rounded-2xl relative transition-all active:scale-95"><Bell size={20} /><div className="absolute top-3 right-3 w-2 h-2 bg-indigo-500 rounded-full border-2 border-white"></div></button>
-                        <div className="h-8 w-px bg-slate-100"></div>
+                    <div className="flex items-center gap-2 lg:gap-6">
+                        <button className="hidden sm:flex p-3 text-slate-400 hover:bg-slate-50 rounded-2xl relative transition-all active:scale-95"><Bell size={20} /><div className="absolute top-3 right-3 w-2 h-2 bg-indigo-500 rounded-full border-2 border-white"></div></button>
+                        <div className="hidden sm:block h-8 w-px bg-slate-100"></div>
                         <button 
                             onClick={() => openEditor()}
-                            className="bg-[#1E3A8A] text-white px-8 py-3.5 rounded-2xl flex items-center gap-2 text-sm font-black shadow-2xl shadow-blue-900/10 hover:bg-slate-800 active:scale-95 transition-all"
+                            className="bg-[#1E3A8A] text-white p-2.5 lg:px-8 lg:py-3.5 rounded-xl lg:rounded-2xl flex items-center gap-2 text-sm font-black shadow-2xl shadow-blue-900/10 hover:bg-slate-800 active:scale-95 transition-all"
                         >
-                            <Plus size={18} /> Create New
+                            <Plus size={18} /> <span className="hidden lg:inline">Create New</span>
                         </button>
                     </div>
                 </header>
 
                 {/* Main Content Scroll Area */}
-                <div className="flex-1 overflow-y-auto p-12 no-scrollbar scroll-smooth">
+                <div className="flex-1 overflow-y-auto p-6 lg:p-12 no-scrollbar scroll-smooth">
                     <div className="max-w-7xl mx-auto">
                         {/* Page Header */}
                         <div className="flex flex-col md:flex-row md:items-end justify-between gap-4 mb-12">
