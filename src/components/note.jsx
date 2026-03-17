@@ -208,6 +208,34 @@ const Note = () => {
         setTasks(tasks.map(t => t.id === id ? { ...t, pinned: !t.pinned } : t));
     };
 
+    const exportToJSON = () => {
+        const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(tasks, null, 2));
+        const downloadAnchorNode = document.createElement('a');
+        downloadAnchorNode.setAttribute("href", dataStr);
+        downloadAnchorNode.setAttribute("download", `KeepNote_Backup_${new Date().toISOString().split('T')[0]}.json`);
+        document.body.appendChild(downloadAnchorNode);
+        downloadAnchorNode.click();
+        downloadAnchorNode.remove();
+    };
+
+    const importFromJSON = (e) => {
+        const file = e.target.files[0];
+        if (!file) return;
+        const reader = new FileReader();
+        reader.onload = (event) => {
+            try {
+                const importedTasks = JSON.parse(event.target.result);
+                if (Array.isArray(importedTasks)) {
+                    setTasks([...importedTasks, ...tasks]);
+                    alert("Knowledge imported successfully!");
+                }
+            } catch (err) {
+                alert("Invalid backup file!");
+            }
+        };
+        reader.readAsText(file);
+    };
+
     // --- COMPUTED ---
     const sortedTasks = useMemo(() => {
         return [...tasks].sort((a, b) => {
@@ -332,11 +360,18 @@ const Note = () => {
 
                 {/* Quick Actions */}
                 <div className="space-y-6">
-                    <h3 className="text-xl font-black text-slate-800 tracking-tight">Quick Actions</h3>
+                    <h3 className={`text-xl font-black tracking-tight ${profile.darkMode ? 'text-white' : 'text-slate-800'}`}>Quick Actions</h3>
                     <div className="grid grid-cols-1 gap-3">
                         <button onClick={() => openEditor()} className="w-full bg-indigo-600 text-white p-5 rounded-2xl font-black text-sm flex items-center gap-4 hover:bg-slate-800 transition-all shadow-lg shadow-indigo-100"><Plus size={20}/> New Note</button>
-                        <button className="w-full bg-white text-slate-600 border border-slate-100 p-5 rounded-2xl font-black text-sm flex items-center gap-4 hover:border-indigo-200 hover:text-indigo-600 transition-all shadow-sm"><FolderPlus size={20}/> Create Folder</button>
-                        <button className="w-full bg-white text-slate-600 border border-slate-100 p-5 rounded-2xl font-black text-sm flex items-center gap-4 hover:border-indigo-200 hover:text-indigo-600 transition-all shadow-sm"><ExternalLink size={20}/> Import Notes</button>
+                        <button className={`w-full p-5 rounded-2xl font-black text-sm flex items-center gap-4 transition-all shadow-sm border ${profile.darkMode ? 'bg-slate-900 text-slate-300 border-slate-800 hover:border-indigo-500' : 'bg-white text-slate-600 border-slate-100 hover:border-indigo-200 hover:text-indigo-600'}`}>
+                            <FolderPlus size={20}/> Create Folder
+                        </button>
+                        <div className="relative group">
+                            <input type="file" onChange={importFromJSON} className="absolute inset-0 opacity-0 cursor-pointer pointer-events-auto" />
+                            <button className={`w-full p-5 rounded-2xl font-black text-sm flex items-center gap-4 transition-all shadow-sm border pointer-events-none ${profile.darkMode ? 'bg-slate-900 text-slate-300 border-slate-800 group-hover:border-indigo-500' : 'bg-white text-slate-600 border-slate-100 group-hover:border-indigo-200 group-hover:text-indigo-600'}`}>
+                                <ExternalLink size={20}/> Import Notes
+                            </button>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -370,23 +405,23 @@ const Note = () => {
     );
 
     const renderSettings = () => (
-        <div className="max-w-4xl space-y-12 animate-in fade-in slide-in-from-bottom-4 duration-500">
+        <div className="max-w-4xl space-y-12 animate-in fade-in slide-in-from-bottom-4 duration-500 pb-20">
             {/* Profile Section */}
-            <div className="bg-white p-10 rounded-[2.5rem] border border-slate-100 shadow-sm flex flex-col md:flex-row items-center gap-10">
-                <div className="w-32 h-32 rounded-[2rem] bg-indigo-600 flex items-center justify-center text-4xl font-black text-white shadow-2xl shadow-indigo-100 ring-8 ring-indigo-50">
+            <div className={`p-10 rounded-[2.5rem] border shadow-sm flex flex-col md:flex-row items-center gap-10 transition-colors ${profile.darkMode ? 'bg-slate-900 border-slate-800' : 'bg-white border-slate-100'}`}>
+                <div className="w-32 h-32 rounded-[2rem] bg-indigo-600 flex items-center justify-center text-4xl font-black text-white shadow-2xl shadow-indigo-100 ring-8 ring-indigo-50/10">
                     {profile.avatar}
                 </div>
                 <div className="flex-1 text-center md:text-left">
                     <div className="flex flex-col md:flex-row items-center justify-between gap-4 mb-4">
                         <div>
-                            <h3 className="text-3xl font-black text-slate-800">{profile.name}</h3>
+                            <h3 className={`text-3xl font-black ${profile.darkMode ? 'text-white' : 'text-slate-800'}`}>{profile.name}</h3>
                             <p className="text-slate-400 font-bold">{profile.email}</p>
                         </div>
-                        <button className="px-6 py-2.5 bg-slate-50 text-slate-600 rounded-xl text-xs font-black uppercase tracking-widest hover:bg-indigo-50 hover:text-indigo-600 transition-all">Edit Profile</button>
+                        <button className={`px-6 py-2.5 rounded-xl text-xs font-black uppercase tracking-widest transition-all ${profile.darkMode ? 'bg-slate-800 text-slate-300 hover:bg-slate-700' : 'bg-slate-50 text-slate-600 hover:bg-indigo-50 hover:text-indigo-600'}`}>Edit Profile</button>
                     </div>
                     <div className="flex flex-wrap justify-center md:justify-start gap-4">
                         <span className="px-3 py-1 bg-indigo-50 text-indigo-600 rounded-lg text-[10px] font-black uppercase tracking-widest border border-indigo-100">Pro Plan</span>
-                        <span className="px-3 py-1 bg-slate-50 text-slate-400 rounded-lg text-[10px] font-black uppercase tracking-widest border border-slate-100">Joined Mar 2026</span>
+                        <span className={`px-3 py-1 rounded-lg text-[10px] font-black uppercase tracking-widest border ${profile.darkMode ? 'bg-slate-800 text-slate-500 border-slate-700' : 'bg-slate-50 text-slate-400 border-slate-100'}`}>Joined Mar 2026</span>
                     </div>
                 </div>
             </div>
@@ -394,40 +429,40 @@ const Note = () => {
             {/* Config Sections */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                 {/* Preferences */}
-                <div className="bg-white p-8 rounded-[2rem] border border-slate-100 shadow-sm space-y-6">
+                <div className={`p-8 rounded-[2rem] border shadow-sm space-y-6 transition-colors ${profile.darkMode ? 'bg-slate-900 border-slate-800' : 'bg-white border-slate-100'}`}>
                     <div className="flex items-center gap-3">
-                        <Layers size={20} className="text-[#1E3A8A]" />
-                        <h4 className="font-black text-lg text-slate-800">Preferences</h4>
+                        <Layers size={20} className="text-[#6366F1]" />
+                        <h4 className={`font-black text-lg ${profile.darkMode ? 'text-white' : 'text-slate-800'}`}>Preferences</h4>
                     </div>
                     <div className="space-y-4">
-                        <div className="flex items-center justify-between p-4 bg-slate-50 rounded-2xl">
+                        <div className={`flex items-center justify-between p-4 rounded-2xl transition-colors ${profile.darkMode ? 'bg-slate-950' : 'bg-slate-50'}`}>
                             <div className="flex items-center gap-3">
                                 <Moon size={18} className="text-slate-400" />
-                                <span className="text-sm font-bold text-slate-600">Dark Mode</span>
+                                <span className={`text-sm font-bold ${profile.darkMode ? 'text-slate-300' : 'text-slate-600'}`}>Dark Mode</span>
                             </div>
                             <button onClick={() => setProfile({...profile, darkMode: !profile.darkMode})} className={`w-12 h-6 rounded-full transition-all relative ${profile.darkMode ? 'bg-indigo-600' : 'bg-slate-300'}`}>
                                 <div className={`absolute top-1 w-4 h-4 bg-white rounded-full transition-all ${profile.darkMode ? 'left-7' : 'left-1'}`}></div>
                             </button>
                         </div>
-                        <div className="flex items-center justify-between p-4 bg-slate-50 rounded-2xl">
+                        <div className={`flex items-center justify-between p-4 rounded-2xl transition-colors ${profile.darkMode ? 'bg-slate-950' : 'bg-slate-50'}`}>
                             <div className="flex items-center gap-3">
                                 <Type size={18} className="text-slate-400" />
-                                <span className="text-sm font-bold text-slate-600">Font Size</span>
+                                <span className={`text-sm font-bold ${profile.darkMode ? 'text-slate-300' : 'text-slate-600'}`}>Font Size</span>
                             </div>
-                            <select className="bg-transparent text-sm font-black text-indigo-600 outline-none">
+                            <select className="bg-transparent text-sm font-black text-indigo-600 outline-none cursor-pointer">
                                 <option>Small</option>
                                 <option selected>Medium</option>
                                 <option>Large</option>
                             </select>
                         </div>
-                        <div className="flex items-center justify-between p-4 bg-slate-50 rounded-2xl">
+                        <div className={`flex items-center justify-between p-4 rounded-2xl transition-colors ${profile.darkMode ? 'bg-slate-950' : 'bg-slate-50'}`}>
                             <div className="flex items-center gap-3">
                                 <LayoutGrid size={18} className="text-slate-400" />
-                                <span className="text-sm font-bold text-slate-600">Note Layout</span>
+                                <span className={`text-sm font-bold ${profile.darkMode ? 'text-slate-300' : 'text-slate-600'}`}>Note Layout</span>
                             </div>
-                            <div className="flex bg-white p-1 rounded-xl shadow-inner">
+                            <div className={`flex p-1 rounded-xl shadow-inner ${profile.darkMode ? 'bg-slate-900' : 'bg-white'}`}>
                                 <button className="p-2 rounded-lg bg-indigo-50 text-indigo-600"><LayoutGrid size={16}/></button>
-                                <button className="p-2 rounded-lg text-slate-300"><ListIcon size={16}/></button>
+                                <button className="p-2 rounded-lg text-slate-300 hover:text-slate-500"><ListIcon size={16}/></button>
                             </div>
                         </div>
                     </div>
@@ -435,36 +470,36 @@ const Note = () => {
 
                 {/* Storage & Account */}
                 <div className="space-y-8">
-                    <div className="bg-white p-8 rounded-[2rem] border border-slate-100 shadow-sm space-y-6">
+                    <div className={`p-8 rounded-[2rem] border shadow-sm space-y-6 transition-colors ${profile.darkMode ? 'bg-slate-900 border-slate-800' : 'bg-white border-slate-100'}`}>
                         <div className="flex items-center gap-3">
-                            <Save size={20} className="text-[#1E3A8A]" />
-                            <h4 className="font-black text-lg text-slate-800">Storage</h4>
+                            <Save size={20} className="text-[#6366F1]" />
+                            <h4 className={`font-black text-lg ${profile.darkMode ? 'text-white' : 'text-slate-800'}`}>Storage</h4>
                         </div>
                         <div className="space-y-4">
                             <div>
                                 <div className="flex justify-between text-[10px] font-black uppercase text-slate-400 mb-2">
                                     <span>Local Storage Usage</span>
-                                    <span>24%</span>
+                                    <span>{Math.min(100, Math.floor(JSON.stringify(tasks).length / 1024 / 5))} %</span>
                                 </div>
-                                <div className="h-2 bg-slate-100 rounded-full">
-                                    <div className="h-full bg-indigo-600 rounded-full w-[24%]"></div>
+                                <div className={`h-2 rounded-full ${profile.darkMode ? 'bg-slate-950' : 'bg-slate-100'}`}>
+                                    <div className="h-full bg-indigo-600 rounded-full transition-all duration-1000" style={{ width: `${Math.min(100, Math.floor(JSON.stringify(tasks).length / 1024 / 5))}%` }}></div>
                                 </div>
                             </div>
                             <div className="flex justify-between items-center text-sm">
-                                <span className="font-bold text-slate-600">Total System Entries</span>
+                                <span className={`font-bold ${profile.darkMode ? 'text-slate-400' : 'text-slate-600'}`}>Total System Entries</span>
                                 <span className="font-black text-indigo-600">{tasks.length}</span>
                             </div>
                         </div>
                     </div>
 
-                    <div className="bg-white p-8 rounded-[2rem] border border-red-50 shadow-sm space-y-6">
+                    <div className={`p-8 rounded-[2rem] border shadow-sm space-y-6 transition-colors ${profile.darkMode ? 'bg-slate-900 border-red-950/30' : 'bg-white border-red-50'}`}>
                         <div className="flex items-center gap-3">
                             <LogOut size={20} className="text-red-500" />
-                            <h4 className="font-black text-lg text-slate-800">Account Access</h4>
+                            <h4 className={`font-black text-lg ${profile.darkMode ? 'text-white' : 'text-slate-800'}`}>Account Access</h4>
                         </div>
                         <div className="grid grid-cols-2 gap-3">
-                            <button className="flex-1 p-3 bg-slate-50 text-slate-600 rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-slate-100 transition-all">Export JSON</button>
-                            <button className="flex-1 p-3 bg-red-50 text-red-500 rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-red-500 hover:text-white transition-all">Delete Everything</button>
+                            <button onClick={exportToJSON} className={`flex-1 p-3 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${profile.darkMode ? 'bg-slate-950 text-slate-400 hover:bg-slate-800' : 'bg-slate-50 text-slate-600 hover:bg-slate-100'}`}>Export JSON</button>
+                            <button onClick={() => { if(confirm("Are you sure you want to clear your entire digital memory? This cannot be undone.")) setTasks([]); }} className="flex-1 p-3 bg-red-50 text-red-500 rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-red-500 hover:text-white transition-all">Delete Everything</button>
                         </div>
                     </div>
                 </div>
