@@ -360,8 +360,8 @@ const Note = () => {
                 </div>
             ) : (
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">
-                    {tasks.filter(t => t.favorite).map(task => (
-                        <NoteCard key={task.id} task={task} />
+                    {tasks.filter(t => t.favorite).map((task, idx) => (
+                        <NoteCard key={task.id} task={task} index={idx} />
                     ))}
                 </div>
             )}
@@ -477,7 +477,7 @@ const Note = () => {
             <aside className="w-64 sidebar-gradient text-white flex flex-col z-30 shadow-2xl">
                 <div className="p-8 pb-10 flex items-center gap-4">
                     <div className="w-12 h-12 bg-white rounded-2xl flex items-center justify-center shadow-2xl shadow-black/20 overflow-hidden">
-                        <img src="/logo.png" alt="MiniSaaS Logo" className="w-full h-full object-cover" />
+                        <img src="./logo.png" alt="KeepNote Logo" className="w-full h-full object-cover" />
                     </div>
                     <div>
                         <h1 className="text-xl font-black tracking-tighter">KeepNote</h1>
